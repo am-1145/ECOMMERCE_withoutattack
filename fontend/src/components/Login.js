@@ -1,15 +1,12 @@
 import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import '../components/Login.css';
-import { useUser } from './UserProvider'; // Import the custom hook
 
 const Login = () => {
   const [name, setName] = useState(''); // Using name instead of email
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
   const navigate = useNavigate();
-
-  const { setUser } = useUser(); // Access the user context to update the global state
 
   const handleLogin = async () => {
     try {
@@ -27,7 +24,7 @@ const Login = () => {
       const data = await response.json();
 
       if (response.ok) {
-        // Store user data in localStorage
+        // Store user data in localStorage using 'user' key to match Home.js
         localStorage.setItem(
           'user',
           JSON.stringify({
@@ -35,15 +32,7 @@ const Login = () => {
             walletBalance: data.walletBalance, // Store wallet balance from backend
           })
         );
-
-        // Update the user context globally
-        setUser({
-          name: data.name,
-          walletBalance: data.walletBalance,
-        });
-
-        // Redirect to home page after successful login
-        navigate('/home');
+        navigate('/home'); // Redirect to home page after successful login
       } else {
         setError(data.message || 'Login failed');
       }

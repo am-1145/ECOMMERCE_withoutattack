@@ -1,17 +1,36 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { FaSignOutAlt } from 'react-icons/fa';
-import { useLocation } from 'react-router-dom';
+import { useLocation } from 'react-router-dom'; // Use this if using React Router
 import './Navbar.css';
-import { useUser } from './UserProvider'; // Import the custom hook
 
 export default function Navbar() {
-  const { user, setUser } = useUser(); // Get user state and setter
-  const location = useLocation();
+  const [isLoggedIn, setIsLoggedIn] = useState(false); // Default false initially
+  const location = useLocation(); // Use this if using React Router
+
+  useEffect(() => {
+    // Check login status directly when the component mounts
+    const userData = localStorage.getItem('user');
+    setIsLoggedIn(!!userData); // Set loggedIn status based on presence of user data in localStorage
+
+
+    // Add event listener for localStorage changes (e.g., logging in or out from another tab)
+    const handleStorageChange = () => {
+      const updatedUserData = localStorage.getItem('user');
+      setIsLoggedIn(!!updatedUserData); // Update isLoggedIn state
+    };
+
+    window.addEventListener('storage', handleStorageChange);
+
+    // Clean up the event listener on unmount
+    return () => {
+      window.removeEventListener('storage', handleStorageChange);
+    };
+  }, []);
 
   const handleLogout = () => {
     localStorage.removeItem('user');
-    setUser(null); // Clear user state after logging out
-    window.location.href = '/login'; // Redirect to login page
+    setIsLoggedIn(false);
+    window.location.href = '/login'; // Redirect to login page after logging out
   };
 
   const handleChangePassword = () => {
@@ -32,9 +51,10 @@ export default function Navbar() {
           AMEHA
         </a>
 
-        {/* Conditionally render buttons when user is logged in */}
-        {user && (
+        {/* Conditionally render buttons when logged in */}
+        {isLoggedIn && (
           <div className="navbar-right">
+            {/* Hide "Change Password" button on the change-password page */}
             {location.pathname !== '/change-password' && (
               <button className="change-password-button" onClick={handleChangePassword}>
                 Change Password
